@@ -21,4 +21,4 @@ Josh:
     improve readability, but for the moment we'll handwrite them out.
 
     #2 We have a skeleton of the main structures and can start pulling in the main dependencies
-    from the pairing-crypto lib.
+    from the pairing-crypto lib. 

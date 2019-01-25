@@ -5,3 +5,5 @@ authors = ["Josh Fourie <josh.fourie97@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+bn = {git = "https://github.com/JoshFourie/bn.git"}  
+rand = "0.6.4"
