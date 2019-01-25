@@ -11,8 +11,6 @@ pub struct AuthData<T, U, V> {
 // adsnark.hpp 199-208
 impl<T, U, V> AuthData<T, U, V> {
     pub fn auth_data(&self) {}   // overloaded fn()
-
-    pub fn auth_sign
 }
 
 // adsnark.tcc 119-137
