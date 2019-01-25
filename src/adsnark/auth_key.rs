@@ -1,5 +1,6 @@
-use crate::adsnark::{_IOStream, _SizeDomainBits};
-
+use crate::adsnark::{_IOStream};
+use rand::{Rng, FromEntropy};
+use bn::Group;
 
 /************************* SECRET AUTHENTICATION KEY ****************************/
 // 58-83 adsnark.tcc & adsnark.hpp
@@ -100,10 +101,13 @@ impl<T, U, V> AuthKeys<T, U, V>
     // adsnark.tcc 376-388
     // sigkp is a generic KeyPair type with a placeholder implementation
     // prfseed simulates the generation of the aest_ctr_prf.tcc prfKeyT class.
-    pub fn auth_generator(&self) {
-        use rand::{Rng, FromEntropy};
+    // swapped variable positions for i, I1 and minus_i2.
+    pub fn auth_generator() // -> Self {
         let sigkp = crate::adsnark::sig_scheme::kpT::<u8, u8>::sig_gen();
         let prfseed = rand::prelude::StdRng::from_entropy().fill(&mut [0; 32]);
-        let i = bn::Fr::random(&mut rand::thread_rng());
+        let i: bn::Fr = bn::Fr::random(&mut rand::prelude::StdRng::from_entropy());
+        let I1: bn::G1 = bn::G1::one() * i; 
+        let minus_i2: bn::G2 = bn::G2::zero() - (bn::G2::one() * i); 
+        // Self {auth_prms(I1), auth_key(minus_i2, sigkp.vk), auth_key(i, sigkp.sk, prfseed)}
     }
 }
