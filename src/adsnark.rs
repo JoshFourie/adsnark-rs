@@ -107,7 +107,7 @@ pub struct PubAuthKey<T, U> {
 
 // adsnark.tcc 93-109
 impl<T, U> PubAuthKey<T, U> {
-    pub fn auth_keys(self) {
+    pub fn auth_key(self) {
         // overloaded fn()
     }
 }
@@ -119,6 +119,7 @@ impl<T, U> _IOStream for PubAuthKey<T, U>
     fn ostream(&self) {}
 }
 
+// adsnark.tcc 93-109
 impl<T, U> PartialEq for PubAuthKey<T, U>
 where
     T: PartialEq, U: PartialEq,
@@ -137,11 +138,17 @@ where
 
 /************************* Authentication Key Material ****************************/
 // adsnark.hpp 158 - 178
-
 pub struct AuthKeys<T, U, V> {
     pap: T,
     pak: U,
     sak: V,
+}
+
+// adsnark.hpp 167-174
+impl<T, U, V> AuthKeys<T, U, V>
+{
+    pub fn auth_keys(&self) {}
+    // overloaded fn().
 }
 
 /************************* Authenticated Data ****************************/
@@ -150,6 +157,12 @@ pub struct AuthData<T, U, V> {
     mu: T,
     lambda: U,
     sigma: V
+}
+
+// adsnark.hpp 199-208
+impl<T, U, V> AuthData<T, U, V> {
+    pub fn auth_data(&self) {}
+    // overloaded fn()
 }
 
 // adsnark.tcc 119-137
@@ -216,7 +229,7 @@ where
     }
 }
 
-// adsnark.hpp 265-296
+// adsnark.hpp 242-296
 impl<S, T, U, V> ProvingKey<S, T, U, V> 
 where
     T: _SizeDomainBits, 
@@ -225,6 +238,9 @@ where
     (T, U): _SizeDomainBits, 
     (V, U): _SizeDomainBits
 {
+    pub fn poving_key(&self) {}
+    // overloaded fn()
+
     pub fn g1_size(&self) -> usize {
         2 * (self.A_query.domain_size() + self.C_query.domain_size()) 
         + self.B_query.domain_size()
@@ -307,6 +323,9 @@ impl<T, U, V> VerificationKey<T, U, V>
 where 
     V: _SizeDomainBits
 {
+    pub fn verification_key(&self) {}
+    // overloaded fn()
+
     pub fn g1_size(&self) -> usize {
         3 + self.Ain.size()
     }
@@ -325,4 +344,131 @@ where
 }
 
 /************************* Processed Verification Key ****************************/
-// in progress.
+// adsnark.hpp 384-423 & adsnark.tcc 234-304
+pub struct ProcessedVerificationKey<T, U, V> {
+    pp_g2_one_precomp: U,
+    vk_alphaA_g2_precomp: U,
+    vk_alphaB_g1_precomp: T,
+    vk_alphaC_g2_precomp: U,
+    vk_rC_Z_G2_precomp: U,
+    vk_gamma_g2_precomp: U,
+    vk_gamma_beta_g1_precomp: T,
+    vk_gamma_beta_g2_precomp: U,
+    vk_rC_i_g2_precomp: U,
+    A0: T,
+    Ain: V,
+    proof_g_vki_precomp: Vec<T>,
+}
+
+// adsnark.tcc 234-255
+// not sure why we throw the condition through the for loop.
+impl <T, U, V> PartialEq for ProcessedVerificationKey<T, U, V>
+where   
+    T: PartialEq, U: PartialEq, V: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        let mut result = match (
+            self.pp_g2_one_precomp == other.pp_g2_one_precomp,
+            self.vk_alphaA_g2_precomp == other.vk_alphaA_g2_precomp,
+            self.vk_alphaB_g1_precomp == other.vk_alphaB_g1_precomp,
+            self.vk_alphaC_g2_precomp == other.vk_alphaC_g2_precomp,
+            self.vk_rC_Z_G2_precomp == other.vk_rC_Z_G2_precomp,
+            self.vk_gamma_g2_precomp == other.vk_gamma_g2_precomp,
+            self.vk_gamma_beta_g1_precomp == other.vk_gamma_beta_g1_precomp,
+            self.vk_gamma_beta_g2_precomp == other.vk_gamma_beta_g2_precomp,
+            self.vk_rC_i_g2_precomp == other.vk_rC_i_g2_precomp,
+            self.A0 == other.A0,
+            self.Ain == other.Ain,
+            self.proof_g_vki_precomp == other.proof_g_vki_precomp
+        ) {
+            (true, true, true, true, true, true, true, true, true, true, true, true) => true,
+            (_, _, _, _, _, _, _, _, _, _, _, _, ) => false,
+        };
+        for i in 0..self.proof_g_vki_precomp.len() {
+            result &= self.proof_g_vki_precomp[i] == other.proof_g_vki_precomp[i];
+        };
+        result
+    }
+}
+
+// adsnark.tcc 257-304
+impl<T, U, V> _IOStream for ProcessedVerificationKey<T, U, V>
+{
+    fn ostream(&self) {}
+    fn istream(&self) {}
+}
+
+/************************* Key Pair ****************************/
+// adsnark.hpp 426-449
+pub struct KeyPair<S, T, U, V> {
+    pk: ProvingKey<S, T, U, V>,
+    vk: VerificationKey<T, U, V>,
+}
+
+// adsnark.hpp 437-445
+impl<S, T, U, V> KeyPair<S, T, U, V> 
+{
+    pub fn key_pair(&self) {}
+}
+
+/************************* Proof ****************************/
+// adsnark.hpp 449-549 & adsnark.tcc 307-352 
+pub struct Proof<R, S, T> {
+    g_A: (R, T),
+    g_B: (S, T),
+    g_C: (R, T),
+    g_H: T,
+    g_K: T,
+    g_Aau: (R, T),
+    muA: T,
+}
+
+// adsnark.tcc 307-317
+impl<R, S, T> PartialEq for Proof<R, S, T>
+where
+    R: PartialEq, 
+    S: PartialEq, 
+    T: PartialEq,
+    (R, T): PartialEq,
+    (S, T): PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        match (
+            self.g_A == other.g_A,
+            self.g_B == other.g_B,
+            self.g_C == other.g_C,
+            self.g_H == other.g_H,
+            self.g_K == other.g_K,
+            self.g_Aau == other.g_Aau,
+            self.muA == other.muA, 
+        ) {
+            (true, true, true, true, true, true, true) => true,
+            (_, _, _, _, _, _, _, ) => false,
+        }
+    }
+}
+
+// adsnark.tcc 319-352
+impl<R, S, T> _IOStream for Proof<R, S, T> 
+{
+    fn ostream(&self) {}
+    fn istream(&self) {}
+}
+
+// adsnark.hpp 513-549
+impl<R, S, T> Proof<R, S, T>
+{
+    pub fn g1_size() -> usize {
+        10
+    }
+    pub fn g2_size() -> usize {
+        1
+    }
+    pub fn size_in_bits() -> usize {
+        Self::g1_size() // * libff::G1<snark_pp<ppT>>::size_in_bits() 
+        + Self::g2_size() // * libff::G2<snark_pp<ppT>>::size_in_bits()
+    }
+    // pub fn is_well_formed(&self) -> bool {}
+}
+
+/************************* Main Algorithms ****************************/

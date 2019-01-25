@@ -6,7 +6,7 @@ Forking libsnark in C++ from SCIPR Labs to rust-lang for OMNIA Protocol.
 ## DEV-Notes
 Josh:
 
-    I've started with r1cs_ppzkadsnark.tcc/.hpp and we can build the dependecies from there so we can avoid 
+    #1 I've started with r1cs_ppzkadsnark.tcc/.hpp and we can build the dependecies from there so we can avoid 
     overlapping where we fork things we don't need for ad-SNARKS. The code has comments with the file_name 
     and the line_number that I've used for the source: 'adsnark.tcc 171-189' is equivalent to 'I took this 
     from lines 171 to 189 of the r1cs_ppzkadsnark.tcc file'. We'll init everything with generics and put in 
@@ -19,3 +19,6 @@ Josh:
 
     Note that we'll swap out a lot of the bespoke impls such as 'PartialEq' for their macro equivalents to 
     improve readability, but for the moment we'll handwrite them out.
+
+    #2 We have a skeleton of the main structures and can start pulling in the main dependencies
+    from the pairing-crypto lib.
