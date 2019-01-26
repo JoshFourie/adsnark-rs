@@ -1,9 +1,19 @@
-use crate::adsnark::{_IOStream};
-use bn::*;
+/***********************************************************************/
+/*                    PUBLIC AUTHENTICATION PARAMETERS                 */
+/***********************************************************************/
+
+/************************* TRAIT INTERFACES ****************************/
+pub trait _PubAuthParams<T, G>: PartialEq {
+    fn I1() -> T;
+    fn constructor(x: G) -> Self;
+}
 
 /************************* PUBLIC AUTHENTICATION PARAMETERS ****************************/
 // adsnark.hpp 62. 
-// T substitutes ppT type.
+
+use bn::*;
+
+#[derive(PartialEq)]
 pub struct PubAuthParams {
     I1: G1,
 }
@@ -13,26 +23,5 @@ impl PubAuthParams {
         PubAuthParams {
             I1: x,
         }
-    }
-}
-
-impl _IOStream for PubAuthParams {
-    // adsnark.hpp 64.
-    fn ostream(&self) {
-        // unknown function
-        // rough translate ostream << self.0 
-    }
-
-    // adsnark.hpp 67.
-    fn istream(&self) {
-        // unknown function
-        // rough translate istream >> self.0
-    }
-} 
-
-// adsnark.tcc 37.
-impl PartialEq for PubAuthParams {
-    fn eq(&self, other: &PubAuthParams) -> bool {
-        self.I1 == other.I1
     }
 }

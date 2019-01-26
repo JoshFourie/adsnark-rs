@@ -6,6 +6,14 @@ pub mod sig_scheme;
 pub mod verify_scheme;
 
 /************************* Placeholder Traits ****************************/
+// these are added iteratively as required.
+
+pub trait _PairedCrypto {
+    // simulates paired-crypto operations.
+    fn one() -> Self;
+    fn zero() -> Self;
+    fn random() -> Self;
+}
 
 // istream and ostream '<<' equivalent
 pub trait _IOStream {
