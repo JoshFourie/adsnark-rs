@@ -5,7 +5,9 @@
 use crate::adsnark::pair_crypto::_PairedCrypto;
 
 /************************* TRAIT INTERFACES ****************************/
-pub trait _PubAuthParams<T>: PartialEq {
+pub trait _PubAuthParams<T>: 
+    PartialEq + Copy + Clone 
+{
     fn I1(&self) -> T;
     fn constructor(x: T) -> Self;
 }

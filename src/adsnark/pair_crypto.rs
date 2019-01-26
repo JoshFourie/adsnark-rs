@@ -8,7 +8,9 @@ use std::ops::{ Mul, Sub};
 
 /************************* PUBLIC TRAITS ****************************/
 
-pub trait _PairedCrypto {
+pub trait _PairedCrypto:
+    PartialEq + Copy + Clone    
+{
     fn one() -> Self;
     fn zero() -> Self;
     fn random<R: Rng>(r: &mut R) -> Self;

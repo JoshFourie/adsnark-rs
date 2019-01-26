@@ -40,7 +40,7 @@ pub trait _AuthKeys<FR, G1, G2, PAP, PAK, SAK, Vk, Sk, S>:
     fn pap(&self) -> PAP;
     fn pak(&self) -> PAK;
     fn sak(&self) -> SAK;
-    fn auth_generator<RNG, Kp>() -> Self where RNG: Rng + FromEntropy, Kp: _kpT<Sk, Vk> + Copy + PartialEq; // adsnark.tcc 376-388
+    fn auth_generator<RNG, Kp>() -> Self where RNG: Rng + FromEntropy, Kp: _kpT<Sk, Vk>; // adsnark.tcc 376-388
 
 }
 
@@ -104,37 +104,18 @@ impl<FR, G1, G2, PAP, PAK, SAK, Vk, Sk, S>
 for 
     AuthKeys<PAP, PAK, SAK> 
 where   
-    PAP: _PubAuthParams<G1> 
-        + Copy
-        + PartialEq, 
-    PAK: _PubAuthKey<G2, Vk>
-        + Copy
-        + PartialEq, 
-    SAK: _SecAuthKey<FR, Sk, S>
-        + Copy
-        + PartialEq,
-    FR: _PairedCrypto
-        + Copy
-        + PartialEq, 
+    PAP: _PubAuthParams<G1>,
+    PAK: _PubAuthKey<G2, Vk>,
+    SAK: _SecAuthKey<FR, Sk, S>,
+    FR: _PairedCrypto,
     G1: _PairedCrypto
-        + Mul<FR, Output=G1>
-        + Copy
-        + PartialEq, 
+        + Mul<FR, Output=G1>,
     G2: _PairedCrypto
         + Mul<FR, Output=G2>
-        + Sub<G2, Output=G2>
-        + Copy
-        + PartialEq, 
-    Sk: _skp
-        + Copy
-        + PartialEq, 
-    Vk: _vkp
-        + Copy
-        + PartialEq,
-    S: _Seed
-        + Copy
-        + PartialEq,
-
+        + Sub<G2, Output=G2>,
+    Sk: _skp,
+    Vk: _vkp,
+    S: _Seed,
 {
     fn pap(&self) -> PAP { self.pap }
 
@@ -146,8 +127,6 @@ where
     where
         RNG: Rng + FromEntropy,
         Kp: _kpT<Sk, Vk>
-            + Copy
-            + PartialEq,
     {
         let sigkp: Kp = Kp::sig_gen();
         let prfseed = S::constructor(); // aes_ctr_prf.tcc 20-25
