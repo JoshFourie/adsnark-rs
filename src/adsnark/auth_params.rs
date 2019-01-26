@@ -3,9 +3,9 @@
 /***********************************************************************/
 
 /************************* TRAIT INTERFACES ****************************/
-pub trait _PubAuthParams<T, G>: PartialEq {
+pub trait _PubAuthParams<T>: PartialEq {
     fn I1() -> T;
-    fn constructor(x: G) -> Self;
+    fn constructor(x: T) -> Self;
 }
 
 /************************* PUBLIC AUTHENTICATION PARAMETERS ****************************/

@@ -6,30 +6,36 @@ use rand::{Rng, FromEntropy};
 
 /************************* TRAIT INTERFACES ****************************/
 
-pub trait _skp: PartialEq {
-    fn get() -> [u8; 32];
-}
-
-pub trait _vkp: PartialEq {
-    fn get() -> [u8; 64];
-}
-
-pub trait _kpT<S, V> 
-where 
-    S: _skp, V: _vkp,
+pub trait _skp 
 {
-    fn sk() -> S;
-    fn vk() -> V;
+    type Key;
+    fn get(&self) -> Self::Key;
+    fn constructor(k: Self::Key) -> Self;
+}
+
+pub trait _vkp {
+    type Key;
+    fn constructor(k: Self::Key) -> Self;
+    fn get(&self) -> Self::Key;
+}
+
+pub trait _kpT<Sk, Vk> {
+    fn constructor(sk: Sk, vk: Vk) -> Self;
+    fn sk(&self) -> Sk;
+    fn vk(&self) -> Vk;
     fn sig_gen() -> Self;
 }
 
 /************************* STRUCTS ****************************/
 // adsnark_signature.hpp 25-30 
 
-#[derive(PartialEq)]
-pub struct skp([u8; 32]);
+#[derive(PartialEq, Copy, Clone)] pub struct skp( [u8; 32] );
 
-pub struct vkp([u8; 64]);
+#[derive(Copy, Clone)] pub struct vkp( [u8; 64] );
+
+#[derive(Copy, Clone)] pub struct kpT<Sk, Vk> { sk: Sk, vk: Vk }
+
+/************************* IMPLEMENTATIONS ****************************/
 
 impl PartialEq for vkp {
     fn eq(&self, other: &Self) -> bool {
@@ -43,25 +49,40 @@ impl PartialEq for vkp {
     }
 }
 
-pub struct kpT {
-    pub sk: skp,
-    pub vk: vkp,
+impl _skp for skp {
+    type Key = [u8; 32];
+    fn constructor(k: Self::Key) -> Self { skp(k)}
+    fn get(&self) -> Self::Key { self.0 }
+}
+
+impl _vkp for vkp {
+    type Key = [u8; 64];
+    fn constructor(k: Self::Key) -> Self { vkp(k)}
+    fn get(&self) -> Self::Key { self.0 }
 }
 
 // adsnark_signature.hpp 32-42
-impl kpT {
-    pub fn sig_gen() -> Self {
+impl<Sk, Vk> _kpT<Sk, Vk> for kpT<Sk, Vk> 
+where
+    Sk: _skp<Key=[u8; 32]>, Vk: _vkp<Key=[u8; 64]>,
+{
+    fn constructor(sk: Sk, vk: Vk) -> Self { Self { sk, vk } }
+    fn sig_gen() -> Self {
         let mut x = [0; 32];
         rand::prelude::StdRng::from_entropy().fill(&mut x[..]);
         let mut y = [0; 64];
         rand::prelude::StdRng::from_entropy().fill(&mut y[..]);
         Self {
-            sk: skp(x),
-            vk: vkp(y),
+            sk: Sk::constructor(x),
+            vk: Vk::constructor(y),
         }
     }
-    pub fn sig_sign() {}
-    pub fn sig_verify() {}
+    fn sk(&self) -> Sk {
+        self.sk
+    }
+    fn vk(&self) -> Vk {
+        self.vk
+    }
 }
 
 

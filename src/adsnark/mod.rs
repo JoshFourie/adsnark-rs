@@ -12,7 +12,7 @@ pub trait _PairedCrypto {
     // simulates paired-crypto operations.
     fn one() -> Self;
     fn zero() -> Self;
-    fn random() -> Self;
+    fn random<R: rand::Rng>(r: R) -> Self;
 }
 
 // istream and ostream '<<' equivalent

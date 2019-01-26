@@ -7,8 +7,7 @@ use crate::adsnark::{
     auth_params::_PubAuthParams,
     _PairedCrypto,
     };
-
-use crate::adsnark::{sig_scheme, auth_params};
+use rand::{FromEntropy, Rng};
 
 /************************* TRAIT INTERFACES ****************************/
 pub trait _Seed: 
@@ -19,8 +18,6 @@ pub trait _Seed:
 
 pub trait _SecAuthKey<FR, Sk, S>: 
     PartialEq + Copy
-where 
-    FR: _PairedCrypto, Sk: _skp, S: _Seed,
 {
     fn i(&self) -> FR;
     fn skp(&self) -> Sk;
@@ -30,26 +27,14 @@ where
 
 pub trait _PubAuthKey<G2, Vk>: 
     PartialEq + Copy 
-where
-    G2: _PairedCrypto, Vk: _vkp,
 {
     fn minus_i2(&self) -> G2;
     fn vkp(&self) -> Vk;
     fn constructor(x: G2, y: Vk) -> Self;
 }
 
-pub trait _AuthKeys<FR, G1, G2, PAP, PAK, SAK, Vk, Sk, S>:
+pub trait _AuthKeys<RNG, FR, G1, G2, PAP, PAK, SAK, Kp, Vk, Sk, S>:
     PartialEq + Copy
-where
-    PAP: _PubAuthParams<G1>, 
-    PAK: _PubAuthKey<G2, Vk>, 
-    SAK: _SecAuthKey<FR, Sk, S>,
-    FR: _PairedCrypto, 
-    G1: _PairedCrypto, 
-    G2: _PairedCrypto,
-    Vk: _vkp, 
-    Sk: _skp, 
-    S: _Seed,
 {
     fn pap(&self) -> PAP;
     fn pak(&self) -> PAK;
@@ -105,15 +90,9 @@ impl _Seed for Seed {
 
 impl<FR, Sk, S> _SecAuthKey<FR, Sk, S> for SecAuthKey<FR, Sk, S> 
 where 
-    FR: _PairedCrypto 
-        + Copy
-        + PartialEq, 
-    Sk: _skp 
-        + Copy
-        + PartialEq, 
-    S: _Seed 
-        + Copy
-        + PartialEq,
+    FR: _PairedCrypto + Copy + PartialEq, 
+    Sk: _skp + Copy + PartialEq, 
+    S: _Seed + Copy + PartialEq,
 {
     fn i(&self) -> FR {
         self.i
@@ -131,12 +110,8 @@ where
 
 impl<G2, Vk> _PubAuthKey<G2, Vk> for PubAuthKey<G2, Vk> 
 where
-    G2: _PairedCrypto
-        + Copy
-        + PartialEq, 
-    Vk: _vkp
-        + Copy
-        + PartialEq, 
+    G2: _PairedCrypto + Copy + PartialEq, 
+    Vk: _vkp + Copy + PartialEq, 
 {
     fn minus_i2(&self) -> G2 {
         self.minus_i2
@@ -152,12 +127,12 @@ where
     }
 }
 
-impl<FR, G1, G2, PAP, PAK, SAK, Vk, Sk, S> 
-    _AuthKeys<FR, G1, G2, PAP, PAK, SAK, Vk, Sk, S>
+impl<RNG, FR, G1, G2, PAP, PAK, SAK, Kp, Vk, Sk, S> 
+    _AuthKeys<RNG, FR, G1, G2, PAP, PAK, SAK, Kp, Vk, Sk, S>
 for 
     AuthKeys<PAP, PAK, SAK> 
 where   
-    PAP: _PubAuthParams<G1>
+    PAP: _PubAuthParams<G1> 
         + Copy
         + PartialEq, 
     PAK: _PubAuthKey<G2, Vk>
@@ -166,6 +141,8 @@ where
     SAK: _SecAuthKey<FR, Sk, S>
         + Copy
         + PartialEq,
+    RNG: Rng 
+        + FromEntropy,
     FR: _PairedCrypto
         + Copy
         + PartialEq, 
@@ -175,12 +152,15 @@ where
     G2: _PairedCrypto
         + Copy
         + PartialEq,
-    Vk: _vkp
+    Kp: _kpT<Sk, Vk>
         + Copy
         + PartialEq, 
     Sk: _skp
         + Copy
         + PartialEq, 
+    Vk: _vkp
+        + Copy
+        + PartialEq,
     S: _Seed
         + Copy
         + PartialEq,
@@ -196,15 +176,15 @@ where
         self.sak
     }
     fn auth_generator() -> Self {
-        let sigkp: kpT = kpT::sig_gen();
-        let prfseed = Seed::constructor(); // aes_ctr_prf.tcc 20-25
-        let i: Fr = Fr::random(&mut rand::prelude::StdRng::from_entropy());
+        let sigkp: Kp = Kp::sig_gen();
+        let prfseed = S::constructor(); // aes_ctr_prf.tcc 20-25
+        let i: FR = FR::random(&mut RNG::from_entropy());
         let I1: G1 = G1::one() * i; 
         let minus_i2: G2 = G2::zero() - (G2::one() * i); 
         Self {
-            pap: PubAuthParams::constructor(I1),
-            pak: PubAuthKey::constructor(minus_i2, sigkp.vk),
-            sak: SecAuthKey::constructor(i, sigkp.sk, prfseed)
+            pap: PAP::constructor(I1),
+            pak: PAK::constructor(minus_i2, sigkp.vk()),
+            sak: SAK::constructor(i, sigkp.sk(), prfseed)
         }
     }
 }
