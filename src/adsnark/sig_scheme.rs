@@ -36,7 +36,7 @@ pub trait _kpT<Sk, Vk> {
 
 #[derive(Copy, Clone)] pub struct vkp( [u8; 64] );
 
-#[derive(Copy, Clone)] pub struct kpT<Sk, Vk> { sk: Sk, vk: Vk }
+#[derive(PartialEq, Copy, Clone)] pub struct kpT<Sk, Vk> { sk: Sk, vk: Vk }
 
 /************************* IMPLEMENTATIONS ****************************/
 
