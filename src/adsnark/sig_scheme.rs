@@ -6,14 +6,17 @@ use rand::{Rng, FromEntropy};
 
 /************************* TRAIT INTERFACES ****************************/
 
-pub trait _skp 
+pub trait _skp: 
+    PartialEq + Copy 
 {
     type Key;
     fn get(&self) -> Self::Key;
     fn constructor(k: Self::Key) -> Self;
 }
 
-pub trait _vkp {
+pub trait _vkp:  
+    PartialEq + Copy 
+{
     type Key;
     fn constructor(k: Self::Key) -> Self;
     fn get(&self) -> Self::Key;
@@ -64,9 +67,12 @@ impl _vkp for vkp {
 // adsnark_signature.hpp 32-42
 impl<Sk, Vk> _kpT<Sk, Vk> for kpT<Sk, Vk> 
 where
-    Sk: _skp<Key=[u8; 32]>, Vk: _vkp<Key=[u8; 64]>,
+    Sk: _skp<Key=[u8; 32]>, 
+    Vk: _vkp<Key=[u8; 64]>,
 {
+
     fn constructor(sk: Sk, vk: Vk) -> Self { Self { sk, vk } }
+
     fn sig_gen() -> Self {
         let mut x = [0; 32];
         rand::prelude::StdRng::from_entropy().fill(&mut x[..]);

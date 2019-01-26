@@ -2,12 +2,13 @@
 /*                  PUBLIC AND SECRET AUTHENTICATION KEYS              */
 /***********************************************************************/
 
-use crate::adsnark::{
-    sig_scheme::{_kpT, _skp, _vkp},
+use crate::adsnark::{ 
+    sig_scheme::{ _kpT, _skp, _vkp }, 
     auth_params::_PubAuthParams,
-    _PairedCrypto,
+    pair_crypto::_PairedCrypto   
     };
-use rand::{FromEntropy, Rng};
+use rand::{ FromEntropy, Rng };
+use std::ops::{ Mul, Sub };
 
 /************************* TRAIT INTERFACES ****************************/
 pub trait _Seed: 
@@ -147,9 +148,12 @@ where
         + Copy
         + PartialEq, 
     G1: _PairedCrypto
+        + Mul<FR, Output=G1>
         + Copy
         + PartialEq, 
     G2: _PairedCrypto
+        + Mul<FR, Output=G2>
+        + Sub<G2, Output=G2>
         + Copy
         + PartialEq,
     Kp: _kpT<Sk, Vk>
@@ -179,12 +183,17 @@ where
         let sigkp: Kp = Kp::sig_gen();
         let prfseed = S::constructor(); // aes_ctr_prf.tcc 20-25
         let i: FR = FR::random(&mut RNG::from_entropy());
-        let I1: G1 = G1::one() * i; 
-        let minus_i2: G2 = G2::zero() - (G2::one() * i); 
+        let I1 = G1::one() * i; 
+        let minus_i2 = G2::zero() - (G2::one() * i); 
         Self {
             pap: PAP::constructor(I1),
             pak: PAK::constructor(minus_i2, sigkp.vk()),
             sak: SAK::constructor(i, sigkp.sk(), prfseed)
         }
     }
+}
+
+#[test]
+fn auth_generator() {
+    AuthKeys::auth_generator();
 }
