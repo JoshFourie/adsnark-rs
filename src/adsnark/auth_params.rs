@@ -1,19 +1,22 @@
-use crate::adsnark::{_IOStream, _SizeDomainBits};
+use crate::adsnark::{_IOStream};
+use bn::*;
 
 /************************* PUBLIC AUTHENTICATION PARAMETERS ****************************/
 // adsnark.hpp 62. 
 // T substitutes ppT type.
-pub struct PubAuthParams<T>(T);
+pub struct PubAuthParams {
+    I1: G1,
+}
 
-impl<T> PubAuthParams<T> 
-{
-    // adsnark.hpp 78.
-    pub fn pub_auth_params(self) {
-        // overloaded fn()
+impl PubAuthParams {
+    pub fn constructor(x: G1) -> Self {
+        PubAuthParams {
+            I1: x,
+        }
     }
 }
 
-impl<T> _IOStream for PubAuthParams<T> {
+impl _IOStream for PubAuthParams {
     // adsnark.hpp 64.
     fn ostream(&self) {
         // unknown function
@@ -28,11 +31,8 @@ impl<T> _IOStream for PubAuthParams<T> {
 } 
 
 // adsnark.tcc 37.
-impl<T> PartialEq for PubAuthParams<T> 
-where 
-    T: PartialEq,
-{
-    fn eq(&self, other: &PubAuthParams<T>) -> bool {
-        self.0 == other.0
+impl PartialEq for PubAuthParams {
+    fn eq(&self, other: &PubAuthParams) -> bool {
+        self.I1 == other.I1
     }
 }
